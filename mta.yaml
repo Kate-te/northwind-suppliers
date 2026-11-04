@@ -1,0 +1,110 @@
+_schema-version: "3.2"
+ID: northwindsuppliers
+description: Northwind Suppliers SAP Fiori Application
+version: 0.0.1
+modules:
+- name: northwindsuppliers-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: northwindsuppliers-destination-service
+    parameters:
+      content-target: true
+  - name: northwindsuppliers-repo-host
+    parameters:
+      service-key:
+        name: northwindsuppliers-repo-host-key
+  - name: northwindsuppliers-auth
+    parameters:
+      service-key:
+        name: northwindsuppliers-auth-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: northwindsuppliers_html_repo_host
+          ServiceInstanceName: northwindsuppliers-html5-service
+          ServiceKeyName: northwindsuppliers-repo-host-key
+          sap.cloud.service: northwindsuppliers
+        - Authentication: OAuth2UserTokenExchange
+          Name: northwindsuppliers_auth
+          ServiceInstanceName: northwindsuppliers-xsuaa-service
+          ServiceKeyName: northwindsuppliers-auth-key
+          sap.cloud.service: northwindsuppliers
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+- name: northwindsuppliers-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: northwindsuppliers-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - northwindsuppliers.zip
+      name: northwindsuppliers
+      target-path: resources/
+- name: northwindsuppliers
+  type: html5
+  path: .
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: northwindsuppliers-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            Name: Northwind
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://services.odata.org
+            HTML5.DynamicDestination: "true"
+            HTML5.Timeout: "60000"
+            WebIDEEnabled: "true"
+            WebIDEUsage: odata_gen
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: northwindsuppliers-destination-service
+    service-plan: lite
+- name: northwindsuppliers-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      oauth2-configuration:
+        credential-types:
+        - binding-secret
+        - x509
+      tenant-mode: dedicated
+      xsappname: northwindsuppliers-${org}-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: northwindsuppliers-xsuaa-service
+    service-plan: application
+- name: northwindsuppliers-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: northwindsuppliers-html5-service
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
