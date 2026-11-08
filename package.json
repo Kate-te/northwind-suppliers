@@ -10,7 +10,7 @@
         "lint": "eslint webapp"
     },
     "devDependencies": {
-        "@ui5/cli": "^3.11.0",
+        "@ui5/cli": "^4.0.0",
         "@sap/ux-ui5-tooling": "^1.14.4",
         "ui5-task-zipper": "^3.0.0",
         "mbt": "^1.2.28"
