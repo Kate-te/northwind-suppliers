@@ -28,8 +28,8 @@ jobs:
 
       - name: Install Cloud Foundry CLI
         run: |
-          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
-          echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | gpg --dearmor | sudo tee /usr/share/keyrings/cloudfoundry-cli.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/cloudfoundry-cli.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
           sudo apt-get update && sudo apt-get install -y cf8-cli
 
       - name: Install MultiApps CF CLI Plugin
